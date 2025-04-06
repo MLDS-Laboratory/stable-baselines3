@@ -123,6 +123,7 @@ class RSPPO(OnPolicyAlgorithm):
             verbose=verbose,
             device=device,
             seed=seed,
+            ent_coef=0,
             _init_setup_model=False,
             supported_action_spaces=(
                 spaces.Box,
