@@ -1,27 +1,25 @@
-ARG PARENT_IMAGE
-FROM $PARENT_IMAGE
-ARG PYTORCH_DEPS=cpuonly
-ARG PYTHON_VERSION=3.12
-ARG MAMBA_DOCKERFILE_ACTIVATE=1  # (otherwise python will not be found)
+FROM python:3.10.15
 
-# Install micromamba env and dependencies
-RUN micromamba install -n base -y python=$PYTHON_VERSION \
-    pytorch $PYTORCH_DEPS -c conda-forge -c pytorch -c nvidia && \
-    micromamba clean --all --yes
+RUN apt update && apt install sysstat -y
 
-ENV CODE_DIR=/home/$MAMBA_USER
+WORKDIR /app
 
-# Copy setup file only to install dependencies
-COPY --chown=$MAMBA_USER:$MAMBA_USER ./setup.py ${CODE_DIR}/stable-baselines3/setup.py
-COPY --chown=$MAMBA_USER:$MAMBA_USER ./stable_baselines3/version.txt ${CODE_DIR}/stable-baselines3/stable_baselines3/version.txt
+COPY setup.py setup.py
+COPY stable_baselines3/version.txt stable_baselines3/version.txt
 
-RUN cd ${CODE_DIR}/stable-baselines3 && \
-    pip install uv && \
-    uv pip install --system -e .[extra,tests,docs] && \
-    # Use headless version for docker
-    uv pip uninstall opencv-python && \
-    uv pip install --system opencv-python-headless && \
-    pip cache purge && \
-    uv cache clean
+RUN pip install -e .[docs,tests,extra]
+RUN pip install wandb
+RUN pip install "gymnasium[box2d]"
+RUN pip install "gymnasium[mujoco]"
+RUN pip install ray
 
-CMD /bin/bash
+RUN git clone https://github.com/eilab-gt/NovGrid.git
+RUN cd NovGrid && pip install -e .
+RUN pip install git+https://github.com/google-research/realworldrl_suite.git
+
+COPY . .
+
+ENTRYPOINT ["bash", "-c", "\
+    ray start --head \
+    && python experiment.py \
+"]

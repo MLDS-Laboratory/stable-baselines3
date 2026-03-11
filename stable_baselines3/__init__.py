@@ -8,7 +8,10 @@ from stable_baselines3.her.her_replay_buffer import HerReplayBuffer
 from stable_baselines3.ppo import PPO
 from stable_baselines3.sac import SAC
 from stable_baselines3.td3 import TD3
-from stable_baselines3.rsppo import RSPPO
+from stable_baselines3.xpo import XPO
+from stable_baselines3.mvpi import MVPI
+from stable_baselines3.mg import MG
+from stable_baselines3.cppo import CPPO
 # from stable_baselines3.rsa2c import RSA2C
 # from stable_baselines3.exptd3 import EXPTD3
 
@@ -32,7 +35,10 @@ __all__ = [
     "PPO",
     "SAC",
     "TD3",
-    "RSPPO",
+    "XPO",
+    "MVPI",
+    "MG",
+    "CPPO",
     # "RSA2C",
     "HerReplayBuffer",
     "get_system_info",

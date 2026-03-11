@@ -123,6 +123,25 @@ pip install stable-baselines3
 
 Please read the [documentation](https://stable-baselines3.readthedocs.io/) for more details and alternatives (from source, using docker).
 
+### Develop in a Dev Container (VS Code + Docker)
+
+This repository includes a ready-to-use dev container configuration in [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json).
+
+1. Install Docker and Visual Studio Code.
+2. Install the **Dev Containers** extension in VS Code (`ms-vscode-remote.remote-containers`).
+3. Open this repository in VS Code.
+4. Run `Dev Containers: Reopen in Container` from the Command Palette.
+
+On first start, the container automatically installs SB3 with dev dependencies (`.[docs,tests,extra]`) plus Gymnasium Box2D/MuJoCo extras.
+
+After the container is ready, common checks are:
+
+```sh
+make pytest
+make lint
+make type
+```
+
 
 ## Example
 
