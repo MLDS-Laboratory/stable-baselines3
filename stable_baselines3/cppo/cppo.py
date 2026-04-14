@@ -213,11 +213,8 @@ class CPPO(PPO):
             last_values=values, dones=dones)
 
         if self.cap_return and len(completed_uncapped_returns) > 0:
-            sorted_returns = np.sort(np.asarray(
-                completed_uncapped_returns, dtype=np.float32))
-            quantile_idx = min(
-                int(len(sorted_returns) * self.cap_alpha), len(sorted_returns) - 1)
-            batch_quantile_return = float(sorted_returns[quantile_idx])
+            batch_quantile_return = float(np.quantile(
+                completed_uncapped_returns, self.cap_alpha))
 
             self.return_cap += self.cap_tau * \
                 (batch_quantile_return - self.return_cap)

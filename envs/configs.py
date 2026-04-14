@@ -105,9 +105,34 @@ def register_all_envs():
         kwargs={"mode": 1},
     )
     register(
+        id="GuardedMazePaper-8x8-v0",
+        entry_point=GuardedMazeEnv,
+        kwargs={
+            "mode": 1,
+            "continuous": True,
+            "max_steps": 161,
+            "guard_prob": 0.2,
+            "guard_cost": 32,
+            "rand_cost": True,
+            "limit_step_penalty": False,
+        },
+    )
+    register(
         id="GuardedMaze-16x16-v0",
         entry_point=GuardedMazeEnv,
         kwargs={"mode": 2},
+    )
+    register(
+        id="GuardedMazePaper-16x16-v0",
+        entry_point=GuardedMazeEnv,
+        kwargs={
+            "mode": 2,
+            "continuous": True,
+            "guard_prob": 0.2,
+            "guard_cost": 32,
+            "rand_cost": True,
+            "limit_step_penalty": False,
+        },
     )
 
     base_realworld_ids = {

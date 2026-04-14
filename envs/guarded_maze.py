@@ -34,6 +34,7 @@ class GuardedMazeEnv(Env):
         init_state: tuple[int, int] | None = None,
         goal_state: tuple[int, int] | None = None,
         continuous: bool = True,
+        limit_step_penalty: bool = True,
     ):
         self.mode = mode
         if rows is None:
@@ -83,6 +84,7 @@ class GuardedMazeEnv(Env):
             np.array((0, 1)),
         ]
         self.action_noise = action_noise
+        self.limit_step_penalty = limit_step_penalty
 
         self.map = self._randomize_walls()
         self.goal_cell, self.goal = self._random_from_map(
@@ -228,7 +230,12 @@ class GuardedMazeEnv(Env):
                     self.rows + self.cols
                 )
         else:
-            r = 1 * self.L if done else (-1 if self.nsteps < 2 * self.L else 0)
+            if done:
+                r = 1 * self.L
+            elif self.limit_step_penalty:
+                r = -1 if self.nsteps < 2 * self.L else 0
+            else:
+                r = -1
 
         if self.force_motion and not moved:
             r -= self.force_motion
