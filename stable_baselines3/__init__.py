@@ -2,16 +2,19 @@ import os
 
 from stable_baselines3.a2c import A2C
 from stable_baselines3.common.utils import get_system_info
+from stable_baselines3.copg import COPG
+from stable_baselines3.cppo import CPPO
 from stable_baselines3.ddpg import DDPG
 from stable_baselines3.dqn import DQN
 from stable_baselines3.her.her_replay_buffer import HerReplayBuffer
+from stable_baselines3.mg import MG
+from stable_baselines3.mvpi import MVPI
 from stable_baselines3.ppo import PPO
+from stable_baselines3.rpo import RPO
 from stable_baselines3.sac import SAC
 from stable_baselines3.td3 import TD3
 from stable_baselines3.xpo import XPO
-from stable_baselines3.mvpi import MVPI
-from stable_baselines3.mg import MG
-from stable_baselines3.cppo import CPPO
+
 # from stable_baselines3.rsa2c import RSA2C
 # from stable_baselines3.exptd3 import EXPTD3
 
@@ -32,10 +35,12 @@ __all__ = [
     "A2C",
     "DDPG",
     "DQN",
+    "COPG",
     "PPO",
     "SAC",
     "TD3",
     "XPO",
+    "RPO",
     "MVPI",
     "MG",
     "CPPO",

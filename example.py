@@ -1,5 +1,6 @@
 import argparse
 import json
+import re
 from datetime import datetime
 
 import minigrid
@@ -10,7 +11,7 @@ import wandb
 # Import custom environments - this also registers thems
 from envs import env_configs
 from envs.guarded_maze_wandb import GuardedMazeWandbCallback
-from stable_baselines3 import A2C, CPPO, MG, MVPI, PPO, XPO  # noqa: F401
+from stable_baselines3 import A2C, CPPO, MG, MVPI, PPO, RPO, XPO  # noqa: F401
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.utils import set_random_seed
 
@@ -24,12 +25,19 @@ def parse_xy(xy: str | None):
     return int(values[0]), int(values[1])
 
 
+def sanitize_wandb_project_name(name: str) -> str:
+    sanitized = re.sub(r"[/\\#?%:]", "_", name)
+    sanitized = re.sub(r"\s+", "_", sanitized)
+    sanitized = re.sub(r"_+", "_", sanitized).strip("_")
+    return sanitized or "sb3_project"
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--project', type=str, default=None)
-parser.add_argument('--algorithm', type=str, default='ppo')
-parser.add_argument('--algo_name', type=str, default='ppo')
-parser.add_argument('--env_id', type=str, default='RiskyInvertedPendulum-v0')
+parser.add_argument('--project', type=str, default='rpo')
+parser.add_argument('--algorithm', type=str, default='rpo')
+parser.add_argument('--algo_name', type=str, default='rpo')
+parser.add_argument('--env_id', type=str, default='BipedalWalker-v3')
 parser.add_argument('--rollout_buffer_kwargs', type=json.loads, default={})
 parser.add_argument('--gini_coef', type=float, default=None)
 parser.add_argument('--steps', type=float, default=2e6)
@@ -52,6 +60,7 @@ except KeyError:
 
 set_random_seed(args.seed)
 project_name = args.project or f"{args.env_id}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+project_name = sanitize_wandb_project_name(project_name)
 run = wandb.init(
     project=project_name,
     sync_tensorboard=True,

@@ -1,14 +1,25 @@
 import json
+import re
 import subprocess
 from uuid import uuid4
 
+import gymnasium as gym
 import ray
+
+from envs import env_configs  # noqa: F401  # Import registers custom envs
 
 
 @ray.remote(num_cpus=1)
 def run_trial(args):
     cmd = ["python", "example.py", *args]
     subprocess.run(cmd, check=True)
+
+
+def sanitize_wandb_project_name(name: str) -> str:
+    sanitized = re.sub(r"[/\\#?%:]", "_", name)
+    sanitized = re.sub(r"\s+", "_", sanitized)
+    sanitized = re.sub(r"_+", "_", sanitized).strip("_")
+    return sanitized or "sb3_project"
 
 
 steps = "1e6"
@@ -34,15 +45,38 @@ seeds = [0, 10, 20, 30, 40]
 #     # "Safe2Risk3Pendulum-v0",
 # ]
 # envs = ['Safe2RiskyMiniGrid-7x7-v0', 'Safe2RiskyPendulum-v0']
-envs = ['GuardedMaze-8x8-v0']
+
+
+def resolve_walker_env() -> str:
+    candidates = [
+        "dm_control/walker-run-v0",
+        "walker_run-v0",
+        "walker_realworld_walk-v0",
+    ]
+    for env_id in candidates:
+        try:
+            env = gym.make(env_id)
+            env.close()
+            return env_id
+        except Exception:
+            continue
+
+    raise RuntimeError(
+        "No walker environment found. Tried: "
+        "dm_control/walker-run-v0, walker_run-v0, walker_realworld_walk-v0. "
+        "Install dm_control-compatible env registration or use one of the local env IDs."
+    )
+
+
+envs = [resolve_walker_env()]
 identifier = uuid4()
 
 configs = {
     "ppo": [
         {"--algo_name": "ppo"},  # no extra params, just the algorithm name
     ],
-    "cppo": [
-        {"--algo_name": "cppo"}
+    "rpo": [
+        {"--algo_name": "rpo"}
     ],
     # "mg": [
     #     {"--gini_coef": 0.8, "--algo_name": "mg_0.8"},
@@ -67,7 +101,8 @@ for env in envs:
     for seed in seeds:
         for algorithm, hyperparam_list in configs.items():
             for hyperparams in hyperparam_list:
-                project_name = f"{env}-{identifier}"
+                project_name = sanitize_wandb_project_name(
+                    f"{env}-{identifier}")
                 args = [
                     "--project", project_name,
                     "--seed", str(seed),
