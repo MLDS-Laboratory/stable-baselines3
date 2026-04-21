@@ -19,9 +19,6 @@ RUN rm -f /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn.sources
         swig \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/eilab-gt/NovGrid.git
-RUN cd NovGrid && pip install -e .
-
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1

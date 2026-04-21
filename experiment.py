@@ -1,8 +1,11 @@
 import json
+import re
 import subprocess
 from uuid import uuid4
 
 import ray
+
+from envs import env_configs  # noqa: F401  # Import registers custom envs
 
 
 @ray.remote(num_cpus=1)
@@ -11,7 +14,14 @@ def run_trial(args):
     subprocess.run(cmd, check=True)
 
 
-steps = "1e6"
+def sanitize_wandb_project_name(name: str) -> str:
+    sanitized = re.sub(r"[/\\#?%:]", "_", name)
+    sanitized = re.sub(r"\s+", "_", sanitized)
+    sanitized = re.sub(r"_+", "_", sanitized).strip("_")
+    return sanitized or "sb3_project"
+
+
+steps = "1e7"
 seeds = [0, 10, 20, 30, 40]
 # seeds = [0, 10, 20]
 # envs = [
@@ -34,15 +44,20 @@ seeds = [0, 10, 20, 30, 40]
 #     # "Safe2Risk3Pendulum-v0",
 # ]
 # envs = ['Safe2RiskyMiniGrid-7x7-v0', 'Safe2RiskyPendulum-v0']
-envs = ['GuardedMaze-8x8-v0']
+
+envs = ["walker_realworld_walk-v0", "quadruped_realworld_walk-v0"]
+
 identifier = uuid4()
 
 configs = {
     "ppo": [
         {"--algo_name": "ppo"},  # no extra params, just the algorithm name
     ],
-    "cppo": [
-        {"--algo_name": "cppo"}
+    "rpo": [
+        {"--algo_name": "rpo"}
+    ],
+    "copg": [
+        {"--algo_name": "copg"}
     ],
     # "mg": [
     #     {"--gini_coef": 0.8, "--algo_name": "mg_0.8"},
@@ -67,7 +82,8 @@ for env in envs:
     for seed in seeds:
         for algorithm, hyperparam_list in configs.items():
             for hyperparams in hyperparam_list:
-                project_name = f"{env}-{identifier}"
+                project_name = sanitize_wandb_project_name(
+                    f"{env}-{identifier}")
                 args = [
                     "--project", project_name,
                     "--seed", str(seed),
