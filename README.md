@@ -40,6 +40,18 @@ We also provide detailed logs and reports on the [OpenRL Benchmark](https://wand
 | High code coverage          | :heavy_check_mark: |
 | Type hints                  | :heavy_check_mark: |
 
+## Algorithms at a Glance
+
+Stable Baselines3 includes on-policy and off-policy methods with a unified API. Core algorithms include:
+
+- **On-policy**: A2C, PPO, COPG, CPPO, RPO, XPO, MG, MVPI
+- **Off-policy**: DQN, DDPG, TD3, SAC
+- **Utilities**: HER (implemented as `HerReplayBuffer`)
+
+The PPO family includes several PPO-style variants in this repo (COPG, CPPO, RPO, XPO, MG, MVPI), alongside the baseline PPO implementation.
+
+See the full support matrix in the [Implemented Algorithms](#implemented-algorithms) section.
+
 
 ### Planned features
 
@@ -50,6 +62,10 @@ While SB3 development is now focused on bug fixes and maintenance (doc update, u
 - newer algorithms are regularly added to the [SB3 Contrib](https://github.com/Stable-Baselines-Team/stable-baselines3-contrib) repository
 - faster variants are developed in the [SBX (SB3 + Jax)](https://github.com/araffin/sbx) repository
 - the training framework for SB3, the RL Zoo, has an active [roadmap](https://github.com/DLR-RM/rl-baselines3-zoo/issues/299)
+
+## Release cadence
+
+We plan to cut a stable release every academic semester (Spring/Fall), with patch releases as needed for fixes.
 
 ## Migration guide: from Stable-Baselines (SB2) to Stable-Baselines3 (SB3)
 
@@ -143,7 +159,7 @@ make type
 ```
 
 
-## Example
+## PPO Example Script
 
 Most of the code in the library tries to follow a sklearn-like syntax for the Reinforcement Learning algorithms.
 
@@ -203,18 +219,24 @@ All the following examples can be executed online using Google Colab notebooks:
 | ------------------- | ------------------ | ------------------ | ------------------ | ------------------- | ------------------ | --------------------------------- |
 | ARS<sup>[1](#f1)</sup>   | :x: | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | :heavy_check_mark: |
 | A2C   | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| COPG  | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| CPPO  | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | CrossQ<sup>[1](#f1)</sup>   | :x: | :heavy_check_mark: | :x:                | :x:                 | :x:                | :heavy_check_mark: |
 | DDPG  | :x: | :heavy_check_mark: | :x:                | :x:                 | :x:                | :heavy_check_mark: |
 | DQN   | :x: | :x: | :heavy_check_mark: | :x:                 | :x:                | :heavy_check_mark: |
 | HER   | :x: | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | :heavy_check_mark: |
+| MG    | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
+| MVPI  | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
 | PPO   | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
 | QR-DQN<sup>[1](#f1)</sup>  | :x: | :x: | :heavy_check_mark: | :x:                 | :x:                | :heavy_check_mark: |
 | RecurrentPPO<sup>[1](#f1)</sup>   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
+| RPO   | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
 | SAC   | :x: | :heavy_check_mark: | :x:                | :x:                 | :x:                | :heavy_check_mark: |
 | TD3   | :x: | :heavy_check_mark: | :x:                | :x:                 | :x:                | :heavy_check_mark: |
 | TQC<sup>[1](#f1)</sup>   | :x: | :heavy_check_mark: | :x:                | :x:                 | :x: | :heavy_check_mark: |
 | TRPO<sup>[1](#f1)</sup>  | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
 | Maskable PPO<sup>[1](#f1)</sup>   | :x: | :x: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark:  |
+| XPO   | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |
 
 <b id="f1">1</b>: Implemented in [SB3 Contrib](https://github.com/Stable-Baselines-Team/stable-baselines3-contrib) GitHub repository.
 
@@ -223,6 +245,16 @@ Actions `gymnasium.spaces`:
  * `Discrete`: A list of possible actions, where each timestep only one of the actions can be used.
  * `MultiDiscrete`: A list of possible actions, where each timestep only one action of each discrete set can be used.
  * `MultiBinary`: A list of possible actions, where each timestep any of the actions can be used in any combination.
+
+## Implementing a New Algorithm
+
+If you want to add a new algorithm, start from the base classes in `stable_baselines3.common`:
+
+- **On-policy** methods should inherit from `OnPolicyAlgorithm` and implement/override `train()` plus any rollout logic if needed.
+- **Off-policy** methods should inherit from `OffPolicyAlgorithm` and implement/override `train()` (and buffer handling if customized).
+- For custom control flow or non-standard data collection, inherit from `BaseAlgorithm` directly.
+
+At a minimum, define policy aliases, call the parent constructor, and implement `_setup_model()` and `train()`. You can follow existing implementations such as `PPO` or `SAC` as a template and add the new class to `stable_baselines3/__init__.py` to expose it at the package level.
 
 
 
